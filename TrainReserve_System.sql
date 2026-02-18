@@ -346,105 +346,288 @@ from Reservations
 order by fare DESC
 
 --Find the train with the lowest average fare.
-select 
+SELECT t.train_id, t.train_name, AVG(r.fare) AS avg_fare
+FROM Trains t
+JOIN Reservations r ON t.train_id = r.train_id
+GROUP BY t.train_id, t.train_name
+HAVING AVG(r.fare) = (
+    SELECT MIN(avg_fare)
+    FROM (
+        SELECT AVG(fare) AS avg_fare
+        FROM Reservations
+        GROUP BY train_id
+    ) AS sub
+)
 
 --Show the train(s) where total distance travelled by all passengers > 1000 km.
+SELECT t.train_id, t.train_name, 
+       SUM(t.distance_km) AS total_distance
+FROM Trains t
+JOIN Reservations r ON t.train_id = r.train_id
+GROUP BY t.train_id, t.train_name
+HAVING SUM(t.distance_km) > 1000
+
 
 --Find passengers whose reservation status is "Waiting".
+SELECT p.passenger_id, p.name, r.status
+FROM Passengers p
+JOIN Reservations r ON p.passenger_id = r.passenger_id
+WHERE r.status = 'Waiting'
+
 
 --Show the passenger(s) who paid the maximum fare overall.
+SELECT p.passenger_id, p.name, r.fare
+FROM Passengers p
+JOIN Reservations r ON p.passenger_id = r.passenger_id
+WHERE r.fare = (
+    SELECT MAX(fare)
+    FROM Reservations
+)
 
 --Show all passengers whose age is between 20 and 40.
+SELECT *
+FROM Passengers
+WHERE age BETWEEN 20 AND 40
 
 --Find trains that start from Kolkata or Chennai.
+SELECT *
+FROM Trains
+WHERE source IN ('Kolkata', 'Chennai')
 
 --Show all reservations made after 2025-09-05.
+SELECT *
+FROM Reservations
+WHERE travel_date > '2025-09-05'
 
 --Display passengers whose name starts with 'A'.
+SELECT *
+FROM Passengers
+WHERE name LIKE 'A%'
 
 --List passengers whose city is NOT Delhi.
+SELECT *
+FROM Passengers
+WHERE city <> 'Delhi'
 
 --Show the 3 youngest passengers.
+SELECT TOP 3 *
+FROM Passengers
+ORDER BY age ASC
 
 --Show the 2 longest-distance trains.
+SELECT TOP 2 *
+FROM Trains
+ORDER BY distance_km DESC
 
 --Display the 5 most expensive reservations (highest fare).
+SELECT TOP 5 *
+FROM Reservations
+ORDER BY fare DESC
 
 --List trains in alphabetical order of train_name.
+SELECT *
+FROM Trains
+ORDER BY train_name ASC
 
 --Show passengers sorted by age (youngest first).
+SELECT *
+FROM Passengers
+ORDER BY age ASC
 
 --Find the average fare of all reservations.
+SELECT AVG(fare) AS average_fare
+FROM Reservations
 
 --Count the total number of male passengers.
+SELECT COUNT(*) AS total_male_passengers
+FROM Passengers
+WHERE gender = 'M'
 
 --Show the maximum distance among all trains.
+SELECT MAX(distance_km) AS max_distance
+FROM Trains
 
 --Find the total number of Sleeper class reservations.
+SELECT COUNT(*) AS total_sleeper_reservations
+FROM Reservations
+WHERE class = 'Sleeper'
 
 --Find the total fare paid by passengers from Mumbai.
+SELECT SUM(r.fare) AS total_fare_from_mumbai
+FROM Reservations r
+JOIN Passengers p ON r.passenger_id = p.passenger_id
+WHERE p.city = 'Mumbai'
+
 
 --Count the number of reservations per status (Confirmed/Waiting/Cancelled).
+SELECT status, COUNT(*) AS total_reservations
+FROM Reservations
+GROUP BY status
 
 --Find the total number of passengers per gender.
+SELECT gender, COUNT(*) AS total_passengers
+FROM Passengers
+GROUP BY gender
 
 --Show the average fare for each class.
+SELECT class, AVG(fare) AS avg_fare
+FROM Reservations
+GROUP BY class
 
 --Display the number of trains starting from each source city.
+SELECT source, COUNT(*) AS total_trains
+FROM Trains
+GROUP BY source
 
 --Show total reservations grouped by travel_date.
+SELECT travel_date, COUNT(*) AS total_reservations
+FROM Reservations
+GROUP BY travel_date
 
 --Show passenger name, city, and train_name they booked.
+SELECT p.name, p.city, t.train_name
+FROM Reservations r
+JOIN Passengers p ON r.passenger_id = p.passenger_id
+JOIN Trains t ON r.train_id = t.train_id
 
 --List all reservations with passenger name and status.
+SELECT p.name, r.status
+FROM Reservations r
+JOIN Passengers p ON r.passenger_id = p.passenger_id
 
 --Show train_name and number of confirmed passengers on it.
+SELECT t.train_name, COUNT(*) AS confirmed_passengers
+FROM Reservations r
+JOIN Trains t ON r.train_id = t.train_id
+WHERE r.status = 'Confirmed'
+GROUP BY t.train_name
 
 --Display all passengers with train_name (if booked, else show NULL).
+SELECT p.name, t.train_name
+FROM Passengers p
+LEFT JOIN Reservations r ON p.passenger_id = r.passenger_id
+LEFT JOIN Trains t ON r.train_id = t.train_id
 
 --Find which passengers booked Garib Rath train.
-
+SELECT p.name
+FROM Reservations r
+JOIN Passengers p ON r.passenger_id = p.passenger_id
+JOIN Trains t ON r.train_id = t.train_id
+WHERE t.train_name = 'Garib Rath'
 
 --Show train_id and total fare collected, but only where fare > 1000.
+SELECT train_id, SUM(fare) AS total_fare
+FROM Reservations
+WHERE fare > 1000
+GROUP BY train_id
 
 --List source cities that have more than 1 train.
+SELECT source, COUNT(*) AS total_trains
+FROM Trains
+GROUP BY source
+HAVING COUNT(*) > 1
 
 --Find passengers grouped by city where count > 1.
+SELECT city, COUNT(*) AS total_passengers
+FROM Passengers
+GROUP BY city
+HAVING COUNT(*) > 1
 
 --Show classes that earned more than 2000 fare in total.
+SELECT class, SUM(fare) AS total_fare
+FROM Reservations
+GROUP BY class
+HAVING SUM(fare) > 2000
 
 --List trains that have at least 2 passengers booked.
+SELECT train_id, COUNT(*) AS total_passengers
+FROM Reservations
+GROUP BY train_id
+HAVING COUNT(*) >= 2
 
 --Find the passenger(s) with the highest age.
+SELECT *
+FROM Passengers
+WHERE age = (SELECT MAX(age) FROM Passengers)
 
 --Show the train(s) with the shortest distance.
+SELECT *
+FROM Trains
+WHERE distance_km = (SELECT MIN(distance_km) FROM Trains)
 
 --Find the reservation(s) with the lowest fare.
+SELECT *
+FROM Reservations
+WHERE fare = (SELECT MIN(fare) FROM Reservations)
 
 --List passengers who paid above the average fare.
+SELECT p.name, r.fare
+FROM Reservations r
+JOIN Passengers p ON r.passenger_id = p.passenger_id
+WHERE r.fare > (SELECT AVG(fare) FROM Reservations)
 
 --Find trains whose distance is above the average train distance.
-
+SELECT *
+FROM Trains
+WHERE distance_km > (SELECT AVG(distance_km) FROM Trains)
 
 --Show all reservations in September 2025.
+SELECT *
+FROM Reservations
+WHERE travel_date BETWEEN '2025-09-01' AND '2025-09-30'
 
 --Find the earliest travel_date booked.
+SELECT MIN(travel_date) AS earliest_date
+FROM Reservations
 
 --Find the latest travel_date booked.
+SELECT MAX(travel_date) AS latest_date
+FROM Reservations
 
 --Count how many reservations are made per day.
+SELECT travel_date, COUNT(*) AS total_reservations
+FROM Reservations
+GROUP BY travel_date
 
 --List passengers who booked tickets on the same date.
+SELECT travel_date, COUNT(*) AS total_bookings
+FROM Reservations
+GROUP BY travel_date
+HAVING COUNT(*) > 1
 
 --Show passenger name, train_name, and distance travelled.
+SELECT p.name, t.train_name, t.distance_km
+FROM Reservations r
+JOIN Passengers p ON r.passenger_id = p.passenger_id
+JOIN Trains t ON r.train_id = t.train_id
 
 --Find the city that contributed the highest number of passengers.
+SELECT TOP 1 city, COUNT(*) AS total_passengers
+FROM Passengers
+GROUP BY city
+ORDER BY COUNT(*) DESC
 
 --Display each train and its average fare (confirmed only).
+SELECT t.train_name, AVG(r.fare) AS avg_fare
+FROM Reservations r
+JOIN Trains t ON r.train_id = t.train_id
+WHERE r.status = 'Confirmed'
+GROUP BY t.train_name
 
 --Show passengers who booked tickets in more than one class.
+SELECT passenger_id
+FROM Reservations
+GROUP BY passenger_id
+HAVING COUNT(DISTINCT class) > 1
 
 --Find train_name with maximum number of reservations.
+SELECT TOP 1 t.train_name, COUNT(*) AS total_reservations
+FROM Reservations r
+JOIN Trains t ON r.train_id = t.train_id
+GROUP BY t.train_name
+ORDER BY COUNT(*) DESC
+
+
 
 
 
